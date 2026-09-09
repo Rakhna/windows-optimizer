@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # Windows Optimizer & Memory Manager
 
@@ -108,7 +108,7 @@ Tested on a real Windows 11 machine (Intel Core i5-13420H / NVIDIA RTX 4050 Lapt
 
 | Metric | Before Optimization | After Optimization | Net Benefit |
 | :--- | :--- | :--- | :--- |
-| **Free Storage (Drive C:)** | 108.19 GB | **177.52 GB** | **+69.33 GB Reclaimed** |
+| **Free Storage (Drive C:)** | 108.19 GB | **181.66 GB** | **+73.47 GB Reclaimed** |
 | **Available RAM at Idle** | ~7,000 MB | **9,920 MB** | **+2,920 MB Available** |
 | **Context Menu Latency** | 400 ms | **20 ms** | 95% faster menu opening |
 | **Keyboard Input Delay** | 1 (default) | **0 (instant)** | Zero debounce lag |

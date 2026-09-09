@@ -12,7 +12,7 @@
 
 | Parametro | Antes | Despues | Beneficio |
 | :--- | :--- | :--- | :--- |
-| **Almacenamiento Libre (Disco C:)** | 108.19 GB | **177.47 GB** | **+69.28 GB recuperados** en total (Maquinas virtuales, IPSW iOS, Shaders, Zoom, Huerfanas) |
+| **Almacenamiento Libre (Disco C:)** | 108.19 GB | **181.66 GB** | **+73.47 GB recuperados** en total (Maquinas virtuales, DiRT3 replay, IPSW iOS, Shaders, Zoom, Huerfanas) |
 | **Memoria RAM Libre** | ~7,000 MB | **9,920 MB** | **+2,920 MB de RAM liberados** (Arranque limpio + EmptyWorkingSet + Cron 30m) |
 | **Microsoft Edge (RAM)** | 20 procesos activos (637 MB) | **Sleeping Tabs (30s) + Cierre total** | Pestañas inactivas se congelan en 30s liberando su RAM |
 | **Plan de Energia** | Alto rendimiento | **Maximo rendimiento** | Cero latencia en transicion de frecuencias de CPU |
@@ -180,6 +180,24 @@ A traves de [`optimize_admin.bat`](file:///C:/Users/camfs/Documents/GitHub/windo
   - Tareas de telemetria de Office integradas en `optimize_admin.bat`.
 - **Herramienta Creada para LagoFast:**
   - `uninstall_lagofast.bat`: Permite lanzar el desinstalador oficial para retirar del kernel los filtros NDIS (`ndisrd.sys`) y WFP (`netfilter2wfp8.sys`).
+
+### R. Saneamiento Quirurgico de Almacenamiento Muerto (+3.81 GB)
+- **Buffer Huerfano de DiRT 3 (1,899.84 MB):**
+  - Se elimino el archivo inerte `C:\ProgramData\Codemasters\DiRT3\DataCache\camfs\replay\replay.pbf` dejado por el juego ya desinstalado.
+- **Instaladores y Caches de VS Code (1,043.38 MB):**
+  - `%APPDATA%\Code\CachedExtensionVSIXs` (703.71 MB de instaladores brutos de extensiones ya activas).
+  - `%APPDATA%\Code\Cache` (208.29 MB de cache HTTP).
+  - `%APPDATA%\Code\Crashpad` (131.38 MB de volcados de error antiguos).
+- **Caches de Zoom (393.07 MB):**
+  - `%APPDATA%\Zoom\data\WebviewCacheX64` (288.76 MB de cache web interna).
+  - `%APPDATA%\Zoom\data\ZoomAppResource` (104.31 MB de recursos temporales).
+- **Volcados de Error de Motores de Videojuegos (181.74 MB):**
+  - `%LOCALAPPDATA%\FairlightConcept\Saved\Crashes` (163.79 MB de minidumps de Unreal Engine).
+  - `%LOCALAPPDATA%\PioneerGame\Saved\Crashes` (17.95 MB de volcados de Pioneer).
+- **Descargas Incompletas y Runtimes Electron (297.65 MB):**
+  - Descarga corrupta de Chrome: `Downloads\Sin confirmar 888084.crdownload` (104.03 MB).
+  - Cache de runtime Electron: `%APPDATA%\Client\Cache` (193.62 MB).
+- **Almacenamiento Libre Resultante:** **181.66 GB libres** (+73.47 GB recuperados desde el inicio).
 
 ---
 
