@@ -1,0 +1,15 @@
+﻿# Logs & temporary runtime files
+*.log
+.sfc_verified
+optimization.log
+
+# User-specific machine backups
+*.reg
+startup_backup.reg
+uninstall_lagofast.bat
+
+# Editor & OS artifacts
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
