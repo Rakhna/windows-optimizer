@@ -9,8 +9,22 @@ if (-not (Test-Path $installDir)) {
     New-Item -ItemType Directory -Force -Path $installDir | Out-Null
 }
 
-# Copiar script a C:\WindowsOptimizer para que la tarea sea inmune a cambios en la carpeta git
+# Copiar archivos a C:\WindowsOptimizer para que la tarea y el desinstalador sean independientes de git
 Copy-Item -Path $sourceScript -Destination $targetScript -Force
+
+$repoRoot = (Get-Item $PSScriptRoot).Parent.FullName
+$repoCleanBat = Join-Path $repoRoot "clean_ram.bat"
+$repoDisableBat = Join-Path $repoRoot "disable_ram_cron.bat"
+
+if (Test-Path $repoCleanBat) {
+    # Version para ejecucion directa dentro de C:\WindowsOptimizer
+    $cBatContent = "@echo off`r`ntitle Compactador Instantaneo de Memoria RAM`r`npowershell -NoProfile -ExecutionPolicy Bypass -File `"%~dp0clean_ram.ps1`"`r`necho Presiona cualquier tecla para cerrar...`r`npause >nul"
+    [System.IO.File]::WriteAllText((Join-Path $installDir "clean_ram.bat"), $cBatContent, [System.Text.Encoding]::Default)
+}
+
+if (Test-Path $repoDisableBat) {
+    Copy-Item -Path $repoDisableBat -Destination (Join-Path $installDir "disable_ram_cron.bat") -Force
+}
 
 # Accion de la tarea programada apuntando a C:\
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$targetScript`""
