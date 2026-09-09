@@ -99,6 +99,20 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge" /v "EfficiencyMode" /t REG_DWORD
 echo    [OK] Edge: Pestanas en suspension (30s), cierre en segundo plano y modo eficiencia configurados.
 echo [OK] Politicas de Edge configuradas en HKLM. >> "%LOGFILE%"
 
+:: Optimizacion Inteligente de CPU (Intel Hybrid Architecture AC/DC)
+echo.
+echo [*] Calibrando gestion de CPU Intel (AC: Cero latencia / DC: Ahorro profundo)...
+powercfg -attributes 54533251-82be-4824-96c1-47b60b740d00 0cc5b647-c1df-4637-891a-dec35c318583 -ATTRIB_HIDE >nul 2>&1
+powercfg -attributes 54533251-82be-4824-96c1-47b60b740d00 be337238-0d82-4146-a960-4f3749d470c7 -ATTRIB_HIDE >nul 2>&1
+powercfg -attributes 54533251-82be-4824-96c1-47b60b740d00 93b8b6dc-0698-4d1c-9ee4-0644e900c85d -ATTRIB_HIDE >nul 2>&1
+powercfg /setacvalueindex SCHEME_CURRENT 54533251-82be-4824-96c1-47b60b740d00 0cc5b647-c1df-4637-891a-dec35c318583 50 >> "%LOGFILE%" 2>&1
+powercfg /setacvalueindex SCHEME_CURRENT 54533251-82be-4824-96c1-47b60b740d00 93b8b6dc-0698-4d1c-9ee4-0644e900c85d 2 >> "%LOGFILE%" 2>&1
+powercfg /setdcvalueindex SCHEME_CURRENT 54533251-82be-4824-96c1-47b60b740d00 0cc5b647-c1df-4637-891a-dec35c318583 4 >> "%LOGFILE%" 2>&1
+powercfg /setdcvalueindex SCHEME_CURRENT 54533251-82be-4824-96c1-47b60b740d00 be337238-0d82-4146-a960-4f3749d470c7 3 >> "%LOGFILE%" 2>&1
+powercfg /setactive SCHEME_CURRENT >> "%LOGFILE%" 2>&1
+echo    [OK] CPU Intel: Perfil hibrido calibrado (AC: 50%% nucleos activos / DC: Ahorro 4%% y Turbo Eficiente).
+echo [OK] CPU Intel calibrado AC/DC. >> "%LOGFILE%"
+
 :: Optimizaciones de Sistema y Baja Latencia
 echo.
 echo [*] Aplicando ajustes de arranque y baja latencia de red...
