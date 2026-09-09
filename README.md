@@ -74,11 +74,16 @@ graph TD
 - Registers a silent background task (`AutoCleanRAM`) executing every **30 minutes** in `-WindowStyle Hidden` mode.
 - Includes a clean 1-click uninstaller (`disable_ram_cron.bat`) that unregisters the task and removes the folder.
 
-### 3. Idempotent System & Latency Optimizer (`optimize_admin.bat`)
-- **UI Latency:** Drops `MenuShowDelay` from 400 ms to 20 ms and sets `KeyboardDelay` to 0 for instant context menus and zero keyboard debounce latency.
-- **Crash Prevention:** Disables Fast Startup (`HiberbootEnabled = 0`) to eliminate GPU driver TDR freezes (`nvlddmkm` Event 153) and access violation crashes (`0xc0000005`).
-- **Edge Memory Policies:** Automatically puts inactive browser tabs to sleep after 30 seconds and terminates background processes on exit.
-- **Dead Storage Purge:** Purges obsolete Windows Update cache (`SoftwareDistribution\Download`) and runs DISM Component Store cleanup (`/StartComponentCleanup`).
+### 3. Modular System & Latency Optimizer (`optimize_admin.bat`)
+- **Interactive Topics Menu:** Divided into independent topics so you don't have to execute everything every time:
+  - `[1] Intel CPU & Power:` Core Parking (50% AC / 4% DC), Turbo Boost control, and P-core priority.
+  - `[2] Telemetry & Tasks:` Disables background telemetry from Windows and Office.
+  - `[3] System Policies & Edge:` Edge Sleeping Tabs (30s), Widgets removal, and activity tracking disable.
+  - `[4] Latency & Stability:` Fast Startup disable (anti-TDR `nvlddmkm`), Cloudflare DNS, and Defender tuning.
+  - `[5] Dead Storage Cleanup:` Windows Update download cache purge and DISM Component Store cleanup.
+  - `[6] System Integrity Check:` `sfc /scannow` validation.
+  - `[A] Apply All:` One-click full optimization pass.
+- **CLI Parameter Support:** Supports automated headless flags (`--all`, `--cpu`, `--telemetry`, `--policies`, `--latency`, `--cleanup`, `--sfc`).
 
 ### 4. GPU Real-Time Telemetry HUD (`monitor_gpu.bat`)
 - Queries `nvidia-smi` every second to monitor GPU Temperature, Power Draw (Watts), Core/Memory Clocks, and VRAM.
