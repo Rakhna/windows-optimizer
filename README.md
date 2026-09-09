@@ -1,106 +1,138 @@
-﻿# Windows Optimizer & Memory Manager
+﻿<div align="center">
 
-> Lightweight, safe, and aesthetic-preserving optimization suite for Windows 10 & 11.  
-> Reclaims gigabytes of dead storage, compacts working set RAM, reduces input latency, and strips telemetry without breaking visual effects or system integrity.
+# Windows Optimizer & Memory Manager
+
+**Production-grade, safe, and aesthetic-preserving optimization suite for Windows 10 & 11.**
+
+[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://microsoft.com)
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?style=for-the-badge&logo=powershell&logoColor=white)](https://github.com/PowerShell/PowerShell)
+[![API](https://img.shields.io/badge/API-Win32%20psapi.dll-blueviolet?style=for-the-badge)](docs/ARCHITECTURE.md)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![CI](https://img.shields.io/badge/CI-Automated%20Tests-brightgreen?style=for-the-badge)](.github/workflows/ci.yml)
+
+<p align="center">
+  <a href="#key-features">Key Features</a> â€¢
+  <a href="#quick-start">Quick Start</a> â€¢
+  <a href="#architecture">Architecture</a> â€¢
+  <a href="#real-world-benchmarks">Benchmarks</a> â€¢
+  <a href="#safety-guarantees">Safety Guarantees</a> â€¢
+  <a href="docs/ARCHITECTURE.md">Deep Dive</a>
+</p>
+
+</div>
 
 ---
 
-## Overview & Philosophy
+## Overview
 
-Most Windows "optimizer" scripts break essential system features: they corrupt the Microsoft Store, disable Windows Defender, break Bluetooth or audio drivers, or strip visual transparency and animations.
+Most generic Windows debloaters or "tweakers" aggressively break essential features: they disable the Microsoft Store, crash Windows Defender, break Bluetooth or audio stacks, or disable visual transparency and animations.
 
-**Windows Optimizer** is engineered with a strict safety-first philosophy:
-- **Zero Aesthetic Compromises:** Mica, acrylic blur, font smoothing, and window animations remain 100% intact.
-- **Protected Core Components:** Microsoft Store, Windows Defender, Windows Terminal, Photos, Calculator, Audio/Bluetooth stacks, and GPU video codecs (`AV1`, `HEVC`, `VP9`) are strictly protected.
-- **Native Win32 APIs:** Uses native Windows C# interop (`psapi.dll!EmptyWorkingSet`) rather than risky third-party memory hooks.
-- **Idempotency:** Scripts check current system states and skip operations that have already been applied.
+**Windows Optimizer** is designed from the ground up to solve memory bloat, input lag, and storage degradation without breaking the OS:
+- **Preserves Aesthetics:** Mica, acrylic blur, ClearType font smoothing, and window animations remain 100% active.
+- **Protects System Core:** Windows Store, Windows Defender, Windows Terminal, Photos, Calculator, and hardware GPU video codecs (`AV1`, `HEVC`, `VP9`) are never removed.
+- **Native Win32 C# Interoperability:** Compacts RAM using `psapi.dll!EmptyWorkingSet` via in-memory compilation without third-party dependencies.
+- **Self-Healing Deployment:** The background cron deploys a dedicated copy to `C:\WindowsOptimizer\`, ensuring scheduled tasks never break if the repository is moved or deleted.
+
+---
+
+## Architecture Overview
+
+```mermaid
+graph TD
+    A[Repository Root] -->|1-Click Manual| B[clean_ram.bat]
+    A -->|1-Click Cron Install| C[enable_ram_cron.bat]
+    A -->|1-Click System Tune| D[optimize_admin.bat]
+    A -->|1-Click GPU Telemetry| E[monitor_gpu.bat]
+
+    B --> F[scripts/clean_ram.ps1]
+    F --> G[Win32 psapi.dll EmptyWorkingSet]
+    G --> H[Flushes Idle Pages to Standby Cache]
+
+    C --> I[scripts/setup_cron.ps1]
+    I -->|Deploys Engine| J[C:\WindowsOptimizer\clean_ram.ps1]
+    J --> K[Windows Task Scheduler: AutoCleanRAM Every 30m]
+
+    D --> L[Edge Sleeping Tabs & Background Mode]
+    D --> M[Disable Telemetry Tasks & Popups]
+    D --> N[Disable Fast Startup - Prevent TDR Crashes]
+    D --> O[DISM WinSxS & SoftwareDistribution Cleanup]
+
+    E --> P[nvidia-smi HUD: Temp, Watts, Clocks, VRAM]
+```
 
 ---
 
 ## Key Features
 
-### 1. Dynamic Working Set RAM Compactor
-- **Script:** `clean_ram.bat` / `scripts/clean_ram.ps1`
-- **How it works:** Iterates across running user processes and invokes the Win32 API `EmptyWorkingSet` from `psapi.dll`.
-- **Result:** Safely flushes idle pages to standby cache, instantly freeing between **500 MB and 3,000 MB of RAM** without terminating applications.
+### 1. Dynamic RAM Working Set Compactor (`clean_ram.bat`)
+- Compiles a native C# worker that queries running processes and calls `EmptyWorkingSet`.
+- Flushes inactive working set pages to standby cache without restarting processes.
+- Typical result: Instantly recovers **500 MB to 3,000 MB of RAM** before launching heavy games or build tools.
 
-### 2. Silent RAM Cron Automation
-- **Install:** `enable_ram_cron.bat` / `scripts/setup_cron.ps1`
-- **Uninstall:** `disable_ram_cron.bat`
-- **How it works:** Registers a native Windows Task Scheduler task (`AutoCleanRAM`) that runs silently every **30 minutes** (`-WindowStyle Hidden`).
-- **Result:** Keeps memory usage contained automatically throughout long gaming sessions or development workloads.
+### 2. Automated Silent RAM Cron (`enable_ram_cron.bat`)
+- Deploys the worker script permanently to `C:\WindowsOptimizer\clean_ram.ps1`.
+- Registers a silent background task (`AutoCleanRAM`) executing every **30 minutes** in `-WindowStyle Hidden` mode.
+- Includes a clean 1-click uninstaller (`disable_ram_cron.bat`) that unregisters the task and removes the folder.
 
-### 3. Idempotent System & Latency Optimizer
-- **Script:** `optimize_admin.bat` (Run as Administrator)
-- **Features:**
-  - **Telemetry Neutralization:** Disables non-essential background tasks (`Compatibility Appraiser`, `CEIP Consolidator`, `MapsToastTask`, Office telemetry).
-  - **Edge RAM Policy:** Enforces Sleeping Tabs after 30 seconds, disables background extensions on close, and enables Efficiency Mode.
-  - **UI Responsiveness:** Reduces `MenuShowDelay` from 400 ms to 20 ms and sets `KeyboardDelay` to 0 for instant context menus and input response.
-  - **Stability & TDR Prevention:** Disables Fast Startup (`HiberbootEnabled = 0`) to prevent kernel driver memory corruption and GPU TDR crashes (`nvlddmkm` Event 153).
-  - **Dead Storage Reclamation:** Safely purges old Windows Update installers (`SoftwareDistribution\Download`), cleans `%WINDIR%\Temp`, and runs DISM WinSxS Component Store cleanup (`/StartComponentCleanup`).
+### 3. Idempotent System & Latency Optimizer (`optimize_admin.bat`)
+- **UI Latency:** Drops `MenuShowDelay` from 400 ms to 20 ms and sets `KeyboardDelay` to 0 for instant context menus and zero keyboard debounce latency.
+- **Crash Prevention:** Disables Fast Startup (`HiberbootEnabled = 0`) to eliminate GPU driver TDR freezes (`nvlddmkm` Event 153) and access violation crashes (`0xc0000005`).
+- **Edge Memory Policies:** Automatically puts inactive browser tabs to sleep after 30 seconds and terminates background processes on exit.
+- **Dead Storage Purge:** Purges obsolete Windows Update cache (`SoftwareDistribution\Download`) and runs DISM Component Store cleanup (`/StartComponentCleanup`).
 
-### 4. GPU Real-Time Telemetry & Thermal Tracker
-- **Script:** `monitor_gpu.bat` / `scripts/monitor_gpu.ps1`
-- **Features:** Real-time HUD querying `nvidia-smi` every second. Tracks GPU Temperature, Power Draw (Watts), Core/Memory Clocks, VRAM allocation, and alerts on thermal throttling thresholds (>85Â°C).
+### 4. GPU Real-Time Telemetry HUD (`monitor_gpu.bat`)
+- Queries `nvidia-smi` every second to monitor GPU Temperature, Power Draw (Watts), Core/Memory Clocks, and VRAM.
+- Alerts when thermal thresholds are exceeded (>85Â°C) and generates a session peak summary upon exit (`Ctrl+C`).
 
-### 5. Safe UWP Debloater
-- **Script:** `scripts/debloat_uwp.ps1`
-- **Features:** Curated uninstallation of non-essential Windows 10/11 apps (Cortana, Solitaire, Bing News, DevHome, Phone Link, Office push stubs). Includes `-DryRun` mode for previewing removals.
-
----
-
-## Project Structure
-
-```
-windows-optimizer/
-â”œâ”€â”€ clean_ram.bat            # 1-Click manual RAM working set cleaner
-â”œâ”€â”€ enable_ram_cron.bat      # 1-Click installer for 30-minute background RAM cron
-â”œâ”€â”€ disable_ram_cron.bat     # 1-Click uninstaller for the background RAM cron
-â”œâ”€â”€ optimize_admin.bat       # 1-Click elevated system & storage optimizer
-â”œâ”€â”€ monitor_gpu.bat          # 1-Click NVIDIA GPU telemetry monitor
-â”œâ”€â”€ scripts/
-â”‚   â”œâ”€â”€ clean_ram.ps1        # Win32 EmptyWorkingSet memory compactor engine
-â”‚   â”œâ”€â”€ setup_cron.ps1       # Task Scheduler registration engine
-â”‚   â”œâ”€â”€ debloat_uwp.ps1      # Safe UWP package uninstaller
-â”‚   â””â”€â”€ monitor_gpu.ps1      # NVIDIA real-time metrics monitor
-â”œâ”€â”€ docs/
-â”‚   â””â”€â”€ OPTIMIZATION_LOG.md  # Detailed benchmark & real-world test log
-â”œâ”€â”€ .gitignore               # Excludes logs, caches, and machine-specific files
-â”œâ”€â”€ LICENSE                  # MIT License
-â””â”€â”€ README.md
-```
+### 5. Safe UWP Debloater (`scripts/debloat_uwp.ps1`)
+- Removes non-essential Windows 10/11 apps (Cortana, Solitaire, Bing News, DevHome, Phone Link, Office push stubs).
+- Includes `-DryRun` flag to simulate and preview what will be removed.
 
 ---
 
 ## Quick Start
 
-### Option A: 1-Click RAM Cleaning
-Double-click `clean_ram.bat`. A console window will appear, compact idle process memory, display the freed megabytes, and exit on keypress.
-
-### Option B: Set and Forget (Automatic 30-Min Cron)
-Double-click `enable_ram_cron.bat`. Windows Task Scheduler will manage memory silently in the background. To remove it at any time, double-click `disable_ram_cron.bat`.
-
-### Option C: Complete System Optimization
-Right-click `optimize_admin.bat` and select **Run as administrator**. Follow the on-screen progress as it applies group policies, optimizes browser memory, and cleans the component store.
+| Action | Command / Launcher | Description |
+| :--- | :--- | :--- |
+| **Instant RAM Clean** | Double-click `clean_ram.bat` | Cleans RAM working sets and shows before/after stats. |
+| **Enable Auto RAM Cron** | Double-click `enable_ram_cron.bat` | Installs background cleaner running every 30 minutes. |
+| **Disable Auto RAM Cron** | Double-click `disable_ram_cron.bat` | Uninstalls background task and cleans `C:\WindowsOptimizer`. |
+| **Complete System Tune** | Right-click `optimize_admin.bat` > **Run as admin** | Applies group policies, disables telemetry, and cleans WinSxS. |
+| **Monitor GPU Telemetry** | Double-click `monitor_gpu.bat` | Live NVIDIA sensor HUD with thermal warnings. |
 
 ---
 
-## Real-World Benchmark Results
+## Real-World Benchmarks
 
-Tested on Windows 11 (Intel Core i5-13420H / NVIDIA RTX 4050 Laptop / 16 GB RAM):
+Tested on a real Windows 11 machine (Intel Core i5-13420H / NVIDIA RTX 4050 Laptop / 16 GB RAM):
 
-| Metric | Before | After | Total Impact |
+| Metric | Before Optimization | After Optimization | Net Benefit |
 | :--- | :--- | :--- | :--- |
-| **Free Storage (C:)** | 108.19 GB | **177.52 GB** | **+69.33 GB Reclaimed** |
-| **Available RAM** | ~7,000 MB | **9,920 MB** | **+2,920 MB Available** |
-| **Menu Latency** | 400 ms | **20 ms** | 95% latency reduction |
-| **Keyboard Delay** | 1 (default) | **0 (instant)** | 0 ms input debounce delay |
-| **System Integrity** | Unchecked | **100% Validated** | Verified 0 corruption via SFC |
+| **Free Storage (Drive C:)** | 108.19 GB | **177.52 GB** | **+69.33 GB Reclaimed** |
+| **Available RAM at Idle** | ~7,000 MB | **9,920 MB** | **+2,920 MB Available** |
+| **Context Menu Latency** | 400 ms | **20 ms** | 95% faster menu opening |
+| **Keyboard Input Delay** | 1 (default) | **0 (instant)** | Zero debounce lag |
+| **System Integrity** | Unverified | **100% Validated** | 0 corrupt components via SFC |
 
-For detailed test logs, see [`docs/OPTIMIZATION_LOG.md`](docs/OPTIMIZATION_LOG.md).
+*Full step-by-step benchmark log available in [`docs/OPTIMIZATION_LOG.md`](docs/OPTIMIZATION_LOG.md).*
+
+---
+
+## Safety Guarantees
+
+We enforce strict validation gates before modifying system settings:
+- **No Registry Bloat:** Only standard, officially documented Microsoft policies are applied.
+- **Rollback Ready:** Startup states and registry keys are backed up before modification.
+- **Automated CI Testing:** Every pull request runs AST syntax verification and RAM trimmer unit tests on `windows-latest`.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Architecture Documentation](docs/ARCHITECTURE.md) before submitting a pull request.
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+Distributed under the [MIT License](LICENSE).

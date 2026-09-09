@@ -1,0 +1,45 @@
+﻿name: Windows Optimizer CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Syntax Validation (PowerShell AST)
+        shell: powershell
+        run: |
+          Write-Host "Validating PowerShell script syntax..." -ForegroundColor Cyan
+          $scripts = Get-ChildItem -Recurse -Filter "*.ps1"
+          $hasErrors = $false
+          foreach ($script in $scripts) {
+              $errors = $null
+              $tokens = $null
+              [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+              if ($errors.Count -gt 0) {
+                  Write-Host "SYNTAX ERROR in $($script.FullName):" -ForegroundColor Red
+                  $errors | ForEach-Object { Write-Host "  $($_)" -ForegroundColor Red }
+                  $hasErrors = $true
+              } else {
+                  Write-Host "  [OK] $($script.Name)" -ForegroundColor Green
+              }
+          }
+          if ($hasErrors) { exit 1 }
+
+      - name: Run Unit Tests
+        shell: powershell
+        run: |
+          Write-Host "Executing unit tests..." -ForegroundColor Cyan
+          Get-ChildItem -Path "tests" -Filter "*.Tests.ps1" | ForEach-Object {
+              Write-Host "Running $($_.Name)..." -ForegroundColor Yellow
+              & $_.FullName
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }

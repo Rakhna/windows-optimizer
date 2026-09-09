@@ -1,0 +1,19 @@
+﻿# Auto detect text files and perform LF normalization
+* text=auto
+
+# Windows batch files MUST use CRLF line endings
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# PowerShell scripts
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+
+# Documentation & Config
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+.gitignore text eol=lf
+LICENSE text eol=lf
